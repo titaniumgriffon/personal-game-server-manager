@@ -16,13 +16,13 @@ VHPW=$(echo $RANDOM | md5sum | head -c 20)
 
 #get stackname created by user data script and update SSM parameter name with this to make it unique
 STACKNAME=$(</tmp/mcParamName.txt)
-PARAMNAME=mcValheimPW-$STACKNAME
+PARAMNAME=mc7dtdPW-$STACKNAME
 
 #put random string into parameter store as encrypted string value
 aws ssm put-parameter --name $PARAMNAME --value $VHPW --type "SecureString" --overwrite
 
 
-#install docker and valheim app on docker
+#install docker and 7dtd app on docker
 sudo apt install docker-ce docker-ce-cli containerd.io -y
 sudo apt install docker-compose -y
 sudo usermod -aG docker $USER
@@ -30,30 +30,27 @@ sudo mkdir /usr/games/serverconfig
 cd /usr/games/serverconfig
 sudo bash -c 'echo "version: \"3\"
 services:
-  valheim:
-    image: mbround18/valheim:latest
+  7dtd:
+    image: vinanrra/7dtd-server:latest
     ports:
-      - 2456:2456/udp
-      - 2457:2457/udp
-      - 2458:2458/udp
+      - 26900:26900/tcp
+      - 26900:26900/udp
+      - 26901:26901/udp
+      - 26902:26902/udp
+      - 8080:8080/tcp
     environment:
-      - PORT=2456
-      - NAME="MyAWSGamingServer"
-      - WORLD="Dedicated"
-      - PASSWORD='"$VHPW"'
-      - TZ=Europe/London
-      - PUBLIC=1
-      - AUTO_UPDATE=1
-      - AUTO_UPDATE_SCHEDULE="0 1 * * *"
-      - AUTO_BACKUP=1
-      - AUTO_BACKUP_SCHEDULE="*/15 * * * *"
-      - AUTO_BACKUP_REMOVE_OLD=1
-      - AUTO_BACKUP_DAYS_TO_LIVE=3
-      - AUTO_BACKUP_ON_UPDATE=1
-      - AUTO_BACKUP_ON_SHUTDOWN=1
+      - START_MODE=3
+      - TimeZone=America/Chicago
+      - PUID=1000
+      - PGID=1000
+      - VERSION=latest_experimental
+      - BACKUP=YES
     volumes:
-      - ./valheim/saves:/home/steam/.config/unity3d/IronGate/Valheim
-      - ./valheim/server:/home/steam/valheim
-      - ./valheim/backups:/home/steam/backups" >> docker-compose.yml'
+      - ./7DaysToDie:/home/sdtdserver/.local/share/7DaysToDie/ 	
+      - ./ServerFiles:/home/sdtdserver/serverfiles/ 	
+      - ./Logs:/home/sdtdserver/log/
+      - ./BackupFolder:/home/sdtdserver/lgsm/backup/
+      - ./LGSM-Config:/home/sdtdserver/lgsm/config-lgsm/sdtdserver
+      " >> docker-compose.yml'
 echo "@reboot root (cd /usr/games/serverconfig/ && docker-compose up)" > /etc/cron.d/awsgameserver
 sudo docker-compose up
