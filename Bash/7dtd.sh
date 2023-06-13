@@ -54,5 +54,6 @@ services:
       - ./BackupFolder:/home/sdtdserver/lgsm/backup/
       - ./LGSM-Config:/home/sdtdserver/lgsm/config-lgsm/sdtdserver
       " >> docker-compose.yml'
+sudo sed -i 's/\t//g' docker-compose.yml
 echo "@reboot root (cd /usr/games/serverconfig/ && docker-compose up)" | sudo tee /etc/cron.d/awsgameserver
 sudo docker-compose up
